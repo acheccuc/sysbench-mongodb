@@ -21,6 +21,7 @@ import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 import com.mongodb.WriteConcern;
 import com.mongodb.WriteResult;
+import com.mongodb.ReadPreference;
 
 public class jmongosysbenchexecute {
     public static AtomicLong globalInserts = new AtomicLong(0);
@@ -155,7 +156,7 @@ public class jmongosysbenchexecute {
         logMe("  seed                     = %d",rngSeed);
         logMe("  userName                 = %s",userName);
 
-        MongoClientOptions clientOptions = new MongoClientOptions.Builder().connectionsPerHost(2048).socketTimeout(60000).writeConcern(myWC).build();
+        MongoClientOptions clientOptions = new MongoClientOptions.Builder().connectionsPerHost(2048).socketTimeout(60000).writeConcern(myWC).readPreference(ReadPreference.nearest()).build();
         ServerAddress srvrAdd = new ServerAddress(serverName,serverPort);
 
         // Credential login is optional.
@@ -164,11 +165,12 @@ public class jmongosysbenchexecute {
             m = new MongoClient(srvrAdd);
         } else {
             MongoCredential credential = MongoCredential.createCredential(userName, dbName, passWord.toCharArray());
-            m = new MongoClient(srvrAdd, Arrays.asList(credential));
+            m = new MongoClient(srvrAdd, Arrays.asList(credential), clientOptions);
         }
 
         logMe("mongoOptions | " + m.getMongoOptions().toString());
         logMe("mongoWriteConcern | " + m.getWriteConcern().toString());
+        logMe("mongoReadPreference | " + m.getReadPreference().toString());
 
         DB db = m.getDB(dbName);
 
